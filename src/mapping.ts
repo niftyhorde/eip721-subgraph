@@ -1,4 +1,4 @@
-import { store, Bytes, BigInt } from '@graphprotocol/graph-ts';
+import { store, Bytes, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { Transfer, EIP721 } from '../generated/EIP721/EIP721';
 import { Token, TokenContract, Owner, All, OwnerPerTokenContract } from '../generated/schema';
 
@@ -26,7 +26,7 @@ function setCharAt(str: string, index: i32, char: string): string {
 
 function normalize(strValue: string): string {
     if (strValue.length === 1 && strValue.charCodeAt(0) === 0) {
-        return "";    
+        return "";
     } else {
         for (let i = 0; i < strValue.length; i++) {
             if (strValue.charCodeAt(i) === 0) {
@@ -51,21 +51,16 @@ export function handleTransfer(event: Transfer): void {
         all.numTokens = BigInt.fromI32(0);
         all.numTokenContracts = BigInt.fromI32(0);
     }
-    
+
     let contract = EIP721.bind(event.address);
     let tokenContract = TokenContract.load(contractId);
     if(tokenContract == null) {
-        // log.error('contract : {}',[event.address.toHexString()]);
         let supportsEIP165Identifier = supportsInterface(contract, '01ffc9a7');
         let supportsEIP721Identifier = supportsInterface(contract, '80ac58cd');
-        let supportsNullIdentifierFalse = supportsInterface(contract, '00000000', false);
-        let supportsEIP721 = supportsEIP165Identifier && supportsEIP721Identifier && supportsNullIdentifierFalse;
 
-        let supportsEIP721Metadata = false;
-        if(supportsEIP721) {
-            supportsEIP721Metadata = supportsInterface(contract, '5b5e139f');
-            // log.error('NEW CONTRACT eip721Metadata for {} : {}', [event.address.toHex(), supportsEIP721Metadata ? 'true' : 'false']);
-        }
+        const tokenURI = contract.try_tokenURI(tokenId);
+        let supportsEIP721Metadata = tokenURI.reverted ? false : true;
+        let supportsEIP721 = supportsEIP721Metadata || (supportsEIP165Identifier && supportsEIP721Identifier);
         if (supportsEIP721) {
             tokenContract = new TokenContract(contractId);
             tokenContract.doAllAddressesOwnTheirIdByDefault = false;
@@ -115,8 +110,8 @@ export function handleTransfer(event: Transfer): void {
                 currentOwner.save();
             }
         } // else minting
-        
-        
+
+
         if(to != zeroAddress) { // transfer
             let newOwner = Owner.load(to);
             if (newOwner == null) {
@@ -142,11 +137,11 @@ export function handleTransfer(event: Transfer): void {
                     eip721Token.tokenURI = ""; // TODO null ?
                 }
             }
-            
+
             if (from == zeroAddress) { // mint +1
                 all.numTokens = all.numTokens.plus(BigInt.fromI32(1));
             }
-            
+
             eip721Token.owner = newOwner.id;
             eip721Token.save();
 
