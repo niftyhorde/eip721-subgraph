@@ -1,11 +1,11 @@
-type _Schema_ {
+type _Schema_
   @fulltext(
     name: "tokenContractSearch"
     language: en
     algorithm: rank
     include: [{entity: "TokenContract", fields: [{ name: "name"}, { name: "symbol"}]}]
   )
-}
+
 
 type All @entity {
   id: ID!
