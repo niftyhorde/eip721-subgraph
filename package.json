@@ -29,12 +29,11 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "local:setup": "wait-on http-get://127.0.0.1:8000 && graph create wighawag/eip721-subgraph --node http://127.0.0.1:8020",
     "codegen": "rm -Rf generated && graph codegen",
     "build": "graph build",
     "generate": "node generate.js",
     "local:create": "graph create --node http://127.0.0.1:8020 mpetrun5/eip721subgraph",
-    "local:redeploy": "graph codegen && wait-on http://127.0.0.1:5001/api/v0/version http-get://127.0.0.1:8000 && graph deploy mpetrun5/eip721subgraph --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
+    "local:redeploy": "graph codegen && graph deploy mpetrun5/eip721subgraph --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "local:deploy": "npm-run-all \"generate mainnet 0\" local:redeploy --",
     "mainnet:redeploy": "dotenv -- cross-var graph deploy --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --access-token $THEGRAPH_TOKEN wighawag/eip721-subgraph",
     "mainnet:deploy": "graph deploy --debug --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ mpetrun5/eip721subgraph",
