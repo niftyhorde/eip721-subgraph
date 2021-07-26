@@ -5,6 +5,8 @@ import { Token, TokenContract, Owner, All, OwnerPerTokenContract } from '../gene
 // import { log } from '@graphprotocol/graph-ts';
 
 let zeroAddress = '0x0000000000000000000000000000000000000000';
+                          // cryptokitties
+let supportedContracts: string[] = ["0x06012c8cf97bead5deae237070f9587f8e7a266d"];
 
 function toBytes(hexString: String): Bytes {
     let result = new Uint8Array(hexString.length/2);
@@ -60,7 +62,7 @@ export function handleTransfer(event: Transfer): void {
 
         const tokenURI = contract.try_tokenURI(tokenId);
         let supportsEIP721Metadata = tokenURI.reverted ? false : true;
-        let supportsEIP721 = supportsEIP721Metadata || (supportsEIP165Identifier && supportsEIP721Identifier);
+        let supportsEIP721 = supportsEIP721Metadata || (supportsEIP165Identifier && supportsEIP721Identifier) || supportedContracts.includes(contractId);
         if (supportsEIP721) {
             tokenContract = new TokenContract(contractId);
             tokenContract.doAllAddressesOwnTheirIdByDefault = false;
